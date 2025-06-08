@@ -1,0 +1,22 @@
+@startuml
+package "Интернет-банк" {
+    [Интернет-банк<br/>ASP.NET MVC 4.5] --> [АБС<br/>Delphi + Oracle]
+}
+
+package "Система кол-центра" {
+    [Система кол-центра<br/>React.js + Java Spring Boot] --> [АБС<br/>Delphi + Oracle]
+}
+
+package "Сайт" {
+    [Сайт<br/>PHP + React.js] --> [СМС-шлюз]
+}
+
+[АБС<br/>Delphi + Oracle] --> [СМС-шлюз]
+[Партнёрский кол-центр] --> [Система кол-центра<br/>React.js + Java Spring Boot]
+
+package "Отдел кредитования" {
+    [Excel-файлы] --> [Отдел кредитования]
+    [Отдел кредитования] --> [Сотрудники депозитов]
+    [Сотрудники депозитов] --> [АБС<br/>Delphi + Oracle]
+}
+@enduml
