@@ -1,0 +1,56 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Диаграмма контейнеров системы синхронизации ставок
+
+Person(back_office_manager, "Менеджер бэк-офиса", "Сотрудник бэк-офиса")
+Person(call_center_manager, "Менеджер кол-центра", "Сотрудник кол-центра")
+Person(partner_cc_manager, "Менеджер партнёрского кол-центра", "Сотрудник партнёрского кол-центра")
+
+System_Boundary(banking_system, "Банковская система") {
+    Container_Boundary(abs_boundary, "АБС") {
+        Container(abs_client, "Десктопный клиент", "Delphi", "Пользовательский интерфейс")
+        Container(rates_service, "Сервис управления ставками", "PL/SQL", "Управление ставками")
+        Container(sync_service, "Сервис синхронизации", "PL/SQL", "Синхронизация ставок")
+        ContainerDb(abs_db, "База данных", "Oracle", "Хранение данных АБС")
+    }
+    
+    Container_Boundary(rates_boundary, "База данных ставок") {
+        Container(rates_api, "API ставок", "ASP.NET Core", "Доступ к ставкам")
+        Container(file_service, "Сервис формирования файлов", "ASP.NET Core", "Формирование файлов")
+        ContainerDb(rates_db, "База данных", "MS SQL", "Хранение ставок")
+    }
+    
+    Container_Boundary(cc_boundary, "Система кол-центра") {
+        Container(cc_web, "Веб-интерфейс", "React.js", "Пользовательский интерфейс")
+        Container(cc_sync, "Сервис синхронизации", "Java Spring Boot", "Синхронизация ставок")
+        ContainerDb(cc_db, "База данных", "PostgreSQL", "Локальное хранение ставок")
+    }
+    
+    Container_Boundary(sftp_boundary, "SFTP-сервер") {
+        Container(sftp_service, "Сервис передачи файлов", "Java", "Передача файлов")
+        ContainerDb(file_storage, "Хранилище файлов", "File System", "Хранение файлов")
+    }
+}
+
+System_Ext(partner_cc, "Партнёрский кол-центр", "Внешняя система кол-центра")
+
+Rel(back_office_manager, abs_client, "Обновляет ставки")
+Rel(abs_client, rates_service, "Передает изменения")
+Rel(rates_service, abs_db, "Сохраняет данные")
+Rel(rates_service, sync_service, "Запрашивает синхронизацию")
+Rel(sync_service, rates_api, "Синхронизирует ставки")
+Rel(rates_api, rates_db, "Читает/записывает данные")
+Rel(rates_api, file_service, "Запрашивает формирование файла")
+Rel(file_service, sftp_service, "Передает файл")
+Rel(sftp_service, file_storage, "Сохраняет файл")
+Rel(sftp_service, partner_cc, "Передает файл")
+Rel(call_center_manager, cc_web, "Консультирует клиентов")
+Rel(cc_web, cc_sync, "Запрашивает ставки")
+Rel(cc_sync, rates_api, "Получает актуальные ставки")
+Rel(cc_sync, cc_db, "Обновляет локальные данные")
+Rel(partner_cc_manager, partner_cc, "Консультирует клиентов")
+
+@enduml 

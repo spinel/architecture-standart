@@ -1,0 +1,29 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Контекстная диаграмма системы синхронизации ставок
+
+Person(back_office_manager, "Менеджер бэк-офиса", "Сотрудник бэк-офиса")
+Person(call_center_manager, "Менеджер кол-центра", "Сотрудник кол-центра")
+Person(partner_cc_manager, "Менеджер партнёрского кол-центра", "Сотрудник партнёрского кол-центра")
+
+System_Boundary(banking_system, "Банковская система") {
+    System(abs, "АБС", "Автоматизированная банковская система")
+    SystemDb(rates_db, "База данных ставок", "Хранение актуальных ставок")
+    System(call_center, "Система кол-центра", "Обработка заявок и консультации")
+    System(sftp_server, "SFTP-сервер", "Передача файлов со ставками")
+}
+
+System_Ext(partner_cc, "Партнёрский кол-центр", "Внешняя система кол-центра")
+
+Rel(back_office_manager, abs, "Обновляет ставки")
+Rel(abs, rates_db, "Синхронизирует ставки")
+Rel(rates_db, sftp_server, "Передает файл со ставками")
+Rel(sftp_server, partner_cc, "Передает файл со ставками")
+Rel(call_center_manager, call_center, "Консультирует клиентов")
+Rel(partner_cc_manager, partner_cc, "Консультирует клиентов")
+Rel(call_center, rates_db, "Получает актуальные ставки")
+
+@enduml 
