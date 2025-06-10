@@ -1,0 +1,67 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Диаграмма контейнеров системы открытия депозитов
+
+Person(client, "Клиент", "Пользователь банка")
+Person(call_center_manager, "Менеджер кол-центра", "Сотрудник кол-центра")
+Person(back_office_manager, "Менеджер бэк-офиса", "Сотрудник бэк-офиса")
+
+System_Boundary(banking_system, "Банковская система") {
+    Container(website, "Сайт банка", "PHP, React.js", "Позволяет подавать заявки на депозиты")
+    
+    Container_Boundary(internet_bank_boundary, "Интернет-банк") {
+        Container(web_interface, "Веб-интерфейс", "ASP.NET MVC 4.5", "Пользовательский интерфейс")
+        Container(api_gateway, "API Gateway", "ASP.NET Core", "Маршрутизация запросов")
+        Container(deposit_service, "Сервис депозитов", "ASP.NET Core", "Обработка заявок на депозиты")
+        Container(auth_service, "Сервис аутентификации", "ASP.NET Core", "Аутентификация и авторизация")
+        Container(notification_service, "Сервис уведомлений", "ASP.NET Core", "Отправка уведомлений")
+        ContainerDb(internet_bank_db, "База данных", "MS SQL", "Хранение данных интернет-банка")
+    }
+    
+    Container_Boundary(call_center_boundary, "Система кол-центра") {
+        Container(cc_web_interface, "Веб-интерфейс", "React.js", "Пользовательский интерфейс")
+        Container(cc_backend, "Бэкенд", "Java Spring Boot", "Обработка заявок")
+        ContainerDb(cc_db, "База данных", "PostgreSQL", "Хранение данных кол-центра")
+    }
+    
+    Container_Boundary(abs_boundary, "АБС") {
+        Container(abs_client, "Десктопный клиент", "Delphi", "Пользовательский интерфейс")
+        Container(deposit_processor, "Сервис обработки депозитов", "PL/SQL", "Обработка депозитов")
+        Container(abs_notification, "Сервис уведомлений", "PL/SQL", "Отправка уведомлений")
+        ContainerDb(abs_db, "База данных", "Oracle", "Хранение данных АБС")
+    }
+    
+    Container(sms_gateway, "SMS-шлюз", "Java", "Отправка SMS-уведомлений")
+    ContainerDb(rates_db, "База данных ставок", "MS SQL", "Хранение актуальных ставок")
+}
+
+Rel(client, website, "Просматривает ставки, подает заявку")
+Rel(client, web_interface, "Просматривает ставки, подает заявку")
+Rel(call_center_manager, cc_web_interface, "Обрабатывает заявки")
+Rel(back_office_manager, abs_client, "Обрабатывает заявки")
+
+Rel(website, api_gateway, "Передает заявку")
+Rel(web_interface, api_gateway, "Передает запросы")
+Rel(api_gateway, deposit_service, "Маршрутизирует запросы")
+Rel(api_gateway, auth_service, "Проверяет авторизацию")
+Rel(deposit_service, notification_service, "Запрашивает отправку уведомлений")
+Rel(deposit_service, internet_bank_db, "Читает/записывает данные")
+Rel(auth_service, internet_bank_db, "Проверяет учетные данные")
+
+Rel(cc_web_interface, cc_backend, "Передает запросы")
+Rel(cc_backend, cc_db, "Читает/записывает данные")
+Rel(cc_backend, deposit_processor, "Передает заявку")
+
+Rel(abs_client, deposit_processor, "Передает запросы")
+Rel(deposit_processor, abs_db, "Читает/записывает данные")
+Rel(deposit_processor, abs_notification, "Запрашивает отправку уведомлений")
+Rel(abs_notification, sms_gateway, "Отправляет уведомления")
+
+Rel(website, rates_db, "Читает ставки")
+Rel(web_interface, rates_db, "Читает ставки")
+Rel(deposit_processor, rates_db, "Читает/обновляет ставки")
+
+@enduml 

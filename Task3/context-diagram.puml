@@ -1,0 +1,33 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Контекстная диаграмма системы открытия депозитов
+
+Person(client, "Клиент", "Пользователь банка")
+Person(call_center_manager, "Менеджер кол-центра", "Сотрудник кол-центра")
+Person(back_office_manager, "Менеджер бэк-офиса", "Сотрудник бэк-офиса")
+
+System_Boundary(banking_system, "Банковская система") {
+    System(website, "Сайт банка", "Позволяет подавать заявки на депозиты")
+    System(internet_bank, "Интернет-банк", "Позволяет подавать заявки на депозиты")
+    System(call_center, "Система кол-центра", "Обработка заявок с сайта")
+    System(abs, "АБС", "Автоматизированная банковская система")
+    System(sms_gateway, "SMS-шлюз", "Отправка SMS-уведомлений")
+    SystemDb(rates_db, "База данных ставок", "Хранение актуальных ставок по депозитам")
+}
+
+Rel(client, website, "Просматривает ставки, подает заявку")
+Rel(client, internet_bank, "Просматривает ставки, подает заявку")
+Rel(call_center_manager, call_center, "Обрабатывает заявки")
+Rel(back_office_manager, abs, "Обрабатывает заявки")
+Rel(website, call_center, "Передает заявку")
+Rel(internet_bank, abs, "Передает заявку")
+Rel(call_center, abs, "Передает заявку")
+Rel(abs, sms_gateway, "Отправляет уведомления")
+Rel(website, rates_db, "Читает ставки")
+Rel(internet_bank, rates_db, "Читает ставки")
+Rel(abs, rates_db, "Читает/обновляет ставки")
+
+@enduml 
